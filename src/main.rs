@@ -1,4 +1,7 @@
 mod db;
+mod handlers;
+mod domain;
+mod routes;
 use db::connect::connect;
 
 #[tokio::main]
