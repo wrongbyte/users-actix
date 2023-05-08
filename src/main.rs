@@ -2,6 +2,8 @@ mod db;
 mod handlers;
 mod domain;
 mod routes;
+mod repositories;
+mod utils;
 use db::connect::connect;
 
 #[tokio::main]

@@ -1,12 +1,13 @@
-use async_trait::async_trait;
-use chrono::{DateTime, Utc};
+use chrono::{
+    DateTime, Utc,
+};
 use http_problem::Result;
-use std::fmt;
-
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, PartialEq, Eq, Serialize)]
+use crate::utils::{serialize_dt, serialize_dt_option};
+
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     pub id: Uuid,
@@ -17,8 +18,10 @@ pub struct User {
     pub password: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bio: Option<String>,
+    #[serde(serialize_with = "serialize_dt")]
     pub creation_time: DateTime<Utc>,
-    pub update_time: DateTime<Utc>,
+    #[serde(serialize_with = "serialize_dt_option")]
+    pub update_time: Option<DateTime<Utc>>,
 }
 
 #[async_trait::async_trait]
