@@ -29,7 +29,7 @@ pub(crate) fn user_routes(cfg: &mut ServiceConfig) {
             .route("/", web::post().to(create_user))
             .route("/{userId}", web::patch().to(update_user_by_id))
             .route("/{userId}", web::get().to(get_user_by_id))
-            .route("/{username}", web::get().to(get_user_by_username))
+            .route("/{nickname}", web::get().to(get_user_by_nickname))
             .route("/{userId}", web::delete().to(delete_user)),
     );
 }
@@ -51,7 +51,7 @@ async fn update_user_by_id(handler: web::Data<DynUserHandler>) -> Result<HttpRes
     Ok(HttpResponse::Ok().body("update_user_by_id"))
 }
 
-async fn get_user_by_username(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {
+async fn get_user_by_nickname(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {
     Ok(HttpResponse::Ok().body("get_user_by_username"))
 }
 

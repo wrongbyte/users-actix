@@ -10,7 +10,7 @@ use crate::{
 pub type DynUserHandler = dyn UserHandler + Send + Sync;
 
 pub struct UserHandlerImpl {
-    pub user_repository: Arc<dyn UserRepository + Send + Sync>,
+    pub user_repository: Box<dyn UserRepository + Send + Sync>,
 }
 
 #[cfg_attr(test, mockall::automock)]

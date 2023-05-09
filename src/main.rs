@@ -6,9 +6,9 @@ mod routes;
 mod utils;
 use std::sync::Arc;
 
-use actix_web::{App, HttpServer, web};
+use actix_web::{web, App, HttpServer};
 use db::connect::connect;
-use handlers::user::UserHandlerImpl;
+use handlers::user::{DynUserHandler, UserHandlerImpl};
 use repositories::user::SqlUserRepository;
 use routes::user::user_routes;
 
@@ -16,17 +16,14 @@ use routes::user::user_routes;
 async fn main() {
     std::env::set_var("RUST_LOG", "debug");
     env_logger::init();
-    let _client = connect()
+    let client = connect()
         .await
         .expect("Database connection error. Quitting");
+    let user_repository = Box::new(SqlUserRepository { client });
 
-    let user_repo = Arc::new(SqlUserRepository);
+    let user_handler: Arc<DynUserHandler> = Arc::new(UserHandlerImpl { user_repository });
 
-    let user_handler = Arc::new(UserHandlerImpl {
-        user_repository: user_repo.clone(),
-    });
-
-    let user_handler = web::Data::from(user_handler);
+    let user_handler = web::Data::from(user_handler.clone());
 
     HttpServer::new(move || {
         App::new()

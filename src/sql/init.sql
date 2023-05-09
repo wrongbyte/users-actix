@@ -1,6 +1,6 @@
 CREATE TABLE users (
     id SERIAL,
-    username VARCHAR(50) UNIQUE,
+    nickname VARCHAR(50) UNIQUE,
     password TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
