@@ -18,11 +18,10 @@ async fn main() {
 
     HttpServer::new(move || {
         App::new()
-            // .app_data(new_todo_controller.clone())
             .configure(user_routes)
     })
-    .bind(("127.0.0.1", 8080))
-    .expect("Unable to run server on port 8080. Quitting")
+    .bind(("127.0.0.1", 3000))
+    .expect("Unable to run server on port 3000. Quitting")
     .run()
     .await
     .unwrap();
