@@ -5,7 +5,7 @@ use tokio_postgres::Client;
 
 pub async fn connect() -> Result<Arc<Client>> {
     let (client, connection) = tokio_postgres::connect(
-        "host=localhost user=postgres password=postgres dbname=onboarding",
+        "host=localhost user=postgres password=postgres dbname=users_actix",
         tokio_postgres::NoTls,
     )
     .await.unwrap();

@@ -4,7 +4,7 @@ use chrono::{
 use http_problem::Result;
 use serde::{Deserialize, Serialize};
 
-use crate::utils::{serialize_dt, serialize_dt_option};
+use crate::{utils::{serialize_dt, serialize_dt_option}, routes::user::NewUserPayload};
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -25,7 +25,7 @@ pub struct User {
 
 #[async_trait::async_trait]
 pub trait UserRepository {
-    async fn create_user(&self, user: User) -> Result<()>;
+    async fn create_user(&self, user: NewUserPayload) -> Result<()>;
     async fn update_user(&self, user: User) -> Result<()>;
     async fn get_user_by_id(&self, id: i64) -> Result<User>;
     async fn get_user_by_nickname(&self, nickname: String) -> Result<User>;

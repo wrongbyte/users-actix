@@ -1,30 +1,48 @@
-use async_trait::async_trait;
+use std::sync::Arc;
+
 use http_problem::Result;
 
-use crate::domain::user::User;
+use crate::{
+    domain::user::{User, UserRepository},
+    routes::user::{NewUserPayload, UpdateUserPayload},
+};
 
-pub struct NewUserPayload {
-    pub name: Option<String>,
-    pub nickname: String,
-    pub email: String,
-    pub password: String,
-    pub bio: Option<String>,
+pub type DynUserHandler = dyn UserHandler + Send + Sync;
+
+pub struct UserHandlerImpl {
+    pub user_repository: Arc<dyn UserRepository + Send + Sync>,
 }
-
-pub struct UpdateUserPayload {
-    pub name: Option<String>,
-    pub nickname: Option<String>,
-    pub password: Option<String>,
-    pub bio: Option<String>,
-}
-
 
 #[cfg_attr(test, mockall::automock)]
-#[async_trait]
+#[async_trait::async_trait]
 pub trait UserHandler {
     async fn create_user(&self, new_user: NewUserPayload) -> Result<()>;
     async fn update_user(&self, id: i64, update_payload: UpdateUserPayload) -> Result<()>;
     async fn get_user_by_id(&self, id: i64) -> Result<User>;
     async fn get_user_by_nickname(&self, nickname: String) -> Result<User>;
     async fn delete_user(&self, id: i64) -> Result<()>;
+}
+
+#[async_trait::async_trait]
+impl UserHandler for UserHandlerImpl {
+    async fn create_user(&self, new_user: NewUserPayload) -> Result<()> {
+        self.user_repository.create_user(new_user).await?;
+        Ok(())
+    }
+
+    async fn update_user(&self, id: i64, update_payload: UpdateUserPayload) -> Result<()> {
+        todo!()
+    }
+
+    async fn get_user_by_id(&self, id: i64) -> Result<User> {
+        todo!()
+    }
+
+    async fn get_user_by_nickname(&self, nickname: String) -> Result<User> {
+        todo!()
+    }
+
+    async fn delete_user(&self, id: i64) -> Result<()> {
+        todo!()
+    }
 }

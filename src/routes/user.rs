@@ -1,4 +1,27 @@
-use actix_web::{web::{ServiceConfig, self}, Responder, HttpResponse};
+use actix_web::{
+    web::{self, ServiceConfig},
+    HttpResponse,
+};
+use http_problem::prelude::*;
+use serde::Deserialize;
+
+use crate::handlers::user::DynUserHandler;
+
+#[derive(Deserialize)]
+pub struct NewUserPayload {
+    pub name: Option<String>,
+    pub nickname: String,
+    pub email: String,
+    pub password: String,
+    pub bio: Option<String>,
+}
+
+pub struct UpdateUserPayload {
+    pub name: Option<String>,
+    pub nickname: Option<String>,
+    pub password: Option<String>,
+    pub bio: Option<String>,
+}
 
 pub(crate) fn user_routes(cfg: &mut ServiceConfig) {
     cfg.service(
@@ -7,26 +30,31 @@ pub(crate) fn user_routes(cfg: &mut ServiceConfig) {
             .route("/{userId}", web::patch().to(update_user_by_id))
             .route("/{userId}", web::get().to(get_user_by_id))
             .route("/{username}", web::get().to(get_user_by_username))
-            .route("/{userId}", web::delete().to(delete_user))
+            .route("/{userId}", web::delete().to(delete_user)),
     );
 }
 
-async fn create_user() -> impl Responder {
-    HttpResponse::Ok().body("create_user")
+async fn create_user(
+    body: web::Json<NewUserPayload>,
+    handler: web::Data<DynUserHandler>,
+) -> Result<HttpResponse> {
+    let payload = body.into_inner();
+    handler.create_user(payload).await?;
+    Ok(HttpResponse::Ok().body("create_user"))
 }
 
-async fn get_user_by_id() -> impl Responder {
-    HttpResponse::Ok().body("get_user_by_id")
+async fn get_user_by_id(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {
+    Ok(HttpResponse::Ok().body("get_user_by_id"))
 }
 
-async fn update_user_by_id() -> impl Responder {
-    HttpResponse::Ok().body("update_user_by_id")
+async fn update_user_by_id(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {
+    Ok(HttpResponse::Ok().body("update_user_by_id"))
 }
 
-async fn get_user_by_username() -> impl Responder {
-    HttpResponse::Ok().body("get_user_by_username")
+async fn get_user_by_username(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {
+    Ok(HttpResponse::Ok().body("get_user_by_username"))
 }
 
-async fn delete_user() -> impl Responder {
-    HttpResponse::Ok().body("delete_user")
+async fn delete_user(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {
+    Ok(HttpResponse::Ok().body("delete_user"))
 }

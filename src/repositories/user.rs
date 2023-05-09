@@ -1,12 +1,12 @@
 use http_problem::Result;
 
-use crate::domain::user::{UserRepository, User};
+use crate::{domain::user::{UserRepository, User}, routes::user::NewUserPayload};
 
 pub struct SqlUserRepository;
 
 #[async_trait::async_trait]
 impl UserRepository for SqlUserRepository {
-    async fn create_user(&self, user: User) -> Result<()> {
+    async fn create_user(&self, user: NewUserPayload) -> Result<()> {
         todo!()
     }
 
