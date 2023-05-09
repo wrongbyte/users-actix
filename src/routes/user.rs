@@ -28,7 +28,6 @@ pub(crate) fn user_routes(cfg: &mut ServiceConfig) {
         web::scope("/users")
             .route("/", web::post().to(create_user))
             .route("/{userId}", web::patch().to(update_user_by_id))
-            .route("/{userId}", web::get().to(get_user_by_id))
             .route("/{nickname}", web::get().to(get_user_by_nickname))
             .route("/{userId}", web::delete().to(delete_user)),
     );
@@ -43,16 +42,17 @@ async fn create_user(
     Ok(HttpResponse::Ok().body("create_user"))
 }
 
-async fn get_user_by_id(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {
-    Ok(HttpResponse::Ok().body("get_user_by_id"))
-}
-
 async fn update_user_by_id(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {
     Ok(HttpResponse::Ok().body("update_user_by_id"))
 }
 
-async fn get_user_by_nickname(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {
-    Ok(HttpResponse::Ok().body("get_user_by_username"))
+async fn get_user_by_nickname(
+    params: web::Path<String>,
+    handler: web::Data<DynUserHandler>,
+) -> Result<HttpResponse> {
+    let nickname = params.into_inner();
+    let user = handler.get_user_by_nickname(nickname).await?;
+    Ok(HttpResponse::Ok().json(user))
 }
 
 async fn delete_user(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {
