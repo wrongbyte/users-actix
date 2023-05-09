@@ -14,16 +14,17 @@ pub struct SqlUserRepository {
 
 #[async_trait::async_trait]
 impl UserRepository for SqlUserRepository {
-    async fn create_user(&self, user: NewUserPayload) -> Result<()> {
+    async fn create_user(&self, user: NewUserPayload) -> Result<PublicUser> {
         let row = self
             .client
             .query_one(
-                "INSERT INTO users (nickname, email, password) VALUES ($1, $2, $3) RETURNING id",
+                "INSERT INTO users (nickname, email, password) VALUES ($1, $2, $3) RETURNING name, nickname, email, bio, creation_time",
                 &[&user.nickname, &user.email, &user.password],
             )
             .await
             .expect("Error on query");
-        Ok(())
+        let new_user = get_public_user_from_sql(row);
+        Ok(new_user)
     }
 
     async fn update_user(&self, user: User) -> Result<()> {

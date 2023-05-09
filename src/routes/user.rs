@@ -38,8 +38,8 @@ async fn create_user(
     handler: web::Data<DynUserHandler>,
 ) -> Result<HttpResponse> {
     let payload = body.into_inner();
-    handler.create_user(payload).await?;
-    Ok(HttpResponse::Ok().body("create_user"))
+    let new_user = handler.create_user(payload).await?;
+    Ok(HttpResponse::Ok().json(new_user))
 }
 
 async fn update_user_by_id(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {

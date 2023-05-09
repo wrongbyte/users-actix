@@ -14,7 +14,7 @@ pub struct UserHandlerImpl {
 #[cfg_attr(test, mockall::automock)]
 #[async_trait::async_trait]
 pub trait UserHandler {
-    async fn create_user(&self, new_user: NewUserPayload) -> Result<()>;
+    async fn create_user(&self, new_user: NewUserPayload) -> Result<PublicUser>;
     async fn update_user(&self, id: i64, update_payload: UpdateUserPayload) -> Result<()>;
     async fn get_user_by_id(&self, id: i64) -> Result<User>;
     async fn get_user_by_nickname(&self, nickname: String) -> Result<PublicUser>;
@@ -23,9 +23,9 @@ pub trait UserHandler {
 
 #[async_trait::async_trait]
 impl UserHandler for UserHandlerImpl {
-    async fn create_user(&self, new_user: NewUserPayload) -> Result<()> {
-        self.user_repository.create_user(new_user).await?;
-        Ok(())
+    async fn create_user(&self, new_user: NewUserPayload) -> Result<PublicUser> {
+        let new_user = self.user_repository.create_user(new_user).await?;
+        Ok(new_user)
     }
 
     async fn update_user(&self, id: i64, update_payload: UpdateUserPayload) -> Result<()> {
