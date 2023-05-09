@@ -1534,12 +1534,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_as"
-version = "0.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ee4afe4c5c3b69699c4267ae42b838e911466d7ca0005046adc93ac95bb16dd"
-
-[[package]]
 name = "serde_derive"
 version = "1.0.162"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1933,7 +1927,6 @@ dependencies = [
  "http-problem",
  "mockall",
  "serde",
- "serde_as",
  "serde_json",
  "serde_with",
  "tokio",
