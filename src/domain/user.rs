@@ -36,7 +36,6 @@ pub struct PublicUser {
 pub trait UserRepository {
     async fn create_user(&self, user: NewUserPayload) -> Result<PublicUser>;
     async fn update_user(&self, user: User) -> Result<()>;
-    async fn get_user_by_id(&self, id: i64) -> Result<User>;
     async fn get_user_by_nickname(&self, nickname: String) -> Result<PublicUser>;
     async fn get_user_by_email(&self, email: String) -> Result<User>;
     async fn delete_user(&self, id: i64) -> Result<()>;

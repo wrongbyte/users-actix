@@ -31,10 +31,6 @@ impl UserRepository for SqlUserRepository {
         todo!()
     }
 
-    async fn get_user_by_id(&self, id: i64) -> Result<User> {
-        todo!()
-    }
-
     async fn get_user_by_nickname(&self, nickname: String) -> Result<PublicUser> {
         let row = self
             .client

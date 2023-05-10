@@ -5,6 +5,8 @@ mod repositories;
 mod routes;
 mod utils;
 use std::sync::Arc;
+use std::env;
+use dotenv::dotenv;
 
 use actix_web::{web, App, HttpServer};
 use db::connect::connect;
@@ -14,7 +16,8 @@ use routes::user::user_routes;
 
 #[tokio::main]
 async fn main() {
-    std::env::set_var("RUST_LOG", "debug");
+    dotenv().ok();
+    let port = env::var("PORT").unwrap_or_else(|_| "3000".to_string());
     env_logger::init();
     let client = connect()
         .await
@@ -30,8 +33,8 @@ async fn main() {
             .app_data(user_handler.clone())
             .configure(user_routes)
     })
-    .bind(("127.0.0.1", 3000))
-    .expect("Unable to run server on port 3000. Quitting")
+    .bind(("127.0.0.1", port.parse::<u16>().unwrap()))
+    .expect("Unable to run server on port {port}. Quitting")
     .run()
     .await
     .unwrap();
