@@ -3,11 +3,11 @@ use actix_web::{
     HttpResponse,
 };
 use http_problem::prelude::*;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-use crate::handlers::user::DynUserHandler;
+use crate::{handlers::user::DynUserHandler, response::GenericResponse};
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct NewUserPayload {
     pub name: Option<String>,
     pub nickname: String,
@@ -16,10 +16,11 @@ pub struct NewUserPayload {
     pub bio: Option<String>,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct UpdateUserPayload {
     pub name: Option<String>,
     pub nickname: Option<String>,
-    pub password: Option<String>,
+    pub email: Option<String>,
     pub bio: Option<String>,
 }
 
@@ -42,8 +43,15 @@ async fn create_user(
     Ok(HttpResponse::Ok().json(new_user))
 }
 
-async fn update_user_by_id(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {
-    Ok(HttpResponse::Ok().body("update_user_by_id"))
+async fn update_user_by_id(
+    params: web::Path<i32>,
+    body: web::Json<UpdateUserPayload>,
+    handler: web::Data<DynUserHandler>,
+) -> Result<HttpResponse> {
+    let id = params.into_inner();
+    let payload = body.into_inner();
+    handler.update_user_by_id(id, payload).await?;
+    Ok(HttpResponse::Ok().into())
 }
 
 async fn get_user_by_nickname(
@@ -52,7 +60,10 @@ async fn get_user_by_nickname(
 ) -> Result<HttpResponse> {
     let nickname = params.into_inner();
     let user = handler.get_user_by_nickname(nickname).await?;
-    Ok(HttpResponse::Ok().json(user))
+    if let Some(existent_user) = user {
+        return Ok(HttpResponse::Ok().json(existent_user));
+    }
+    Ok(HttpResponse::Ok().json(GenericResponse::not_found()))
 }
 
 async fn delete_user(handler: web::Data<DynUserHandler>) -> Result<HttpResponse> {

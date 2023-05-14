@@ -27,28 +27,50 @@ impl UserRepository for SqlUserRepository {
         Ok(new_user)
     }
 
-    async fn update_user(&self, user: User) -> Result<()> {
+    async fn update_user(&self, id: i32, update_payload: User) -> Result<()> {
         todo!()
     }
 
-    async fn get_user_by_nickname(&self, nickname: String) -> Result<PublicUser> {
+    async fn get_user_by_nickname(
+        &self,
+        nickname: String,
+    ) -> Result<Option<PublicUser>> {
         let row = self
             .client
-            .query_one(
+            .query_opt(
                 "SELECT name, nickname, email, bio, creation_time FROM users WHERE nickname = $1",
                 &[&nickname],
             )
             .await
             .expect("Error on query");
-        let user = get_public_user_from_sql(row);
-        Ok(user)
+        if let Some(user) = row {
+            let public_user = get_public_user_from_sql(user);
+            return Ok(Some(public_user));
+        }
+        Ok(None)
+    }
+
+    async fn get_user_by_id(&self, id: i32) -> Result<Option<PublicUser>> {
+        let row = self
+        .client
+        .query_opt(
+            "SELECT name, nickname, email, bio, creation_time FROM users WHERE id = $1",
+            &[&id],
+        )
+        .await
+        .expect("Error on query");
+    if let Some(user) = row {
+        let public_user = get_public_user_from_sql(user);
+        return Ok(Some(public_user));
+    }
+    Ok(None)
     }
 
     async fn get_user_by_email(&self, email: String) -> Result<User> {
         todo!()
     }
 
-    async fn delete_user(&self, id: i64) -> Result<()> {
+    async fn delete_user(&self, id: i32) -> Result<()> {
         todo!()
     }
 }

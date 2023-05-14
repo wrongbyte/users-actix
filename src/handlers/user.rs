@@ -15,9 +15,9 @@ pub struct UserHandlerImpl {
 #[async_trait::async_trait]
 pub trait UserHandler {
     async fn create_user(&self, new_user: NewUserPayload) -> Result<PublicUser>;
-    async fn update_user(&self, id: i64, update_payload: UpdateUserPayload) -> Result<()>;
-    async fn get_user_by_nickname(&self, nickname: String) -> Result<PublicUser>;
-    async fn delete_user(&self, id: i64) -> Result<()>;
+    async fn update_user_by_id(&self, id: i32, update_payload: UpdateUserPayload) -> Result<()>;
+    async fn get_user_by_nickname(&self, nickname: String) -> Result<Option<PublicUser>>;
+    async fn delete_user(&self, id: i32) -> Result<()>;
 }
 
 #[async_trait::async_trait]
@@ -27,16 +27,16 @@ impl UserHandler for UserHandlerImpl {
         Ok(new_user)
     }
 
-    async fn update_user(&self, id: i64, update_payload: UpdateUserPayload) -> Result<()> {
+    async fn update_user_by_id(&self, id: i32, update_payload: UpdateUserPayload) -> Result<()> {
         todo!()
     }
 
-    async fn get_user_by_nickname(&self, nickname: String) -> Result<PublicUser> {
+    async fn get_user_by_nickname(&self, nickname: String) -> Result<Option<PublicUser>> {
         let user = self.user_repository.get_user_by_nickname(nickname).await?;
         Ok(user)
     }
 
-    async fn delete_user(&self, id: i64) -> Result<()> {
+    async fn delete_user(&self, id: i32) -> Result<()> {
         todo!()
     }
 }

@@ -1,15 +1,16 @@
-use chrono::{
-    DateTime, Utc,
-};
-use http_problem::Result;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use http_problem::Result;
 
-use crate::{utils::{serialize_dt, serialize_dt_option}, routes::user::NewUserPayload};
+use crate::{
+    routes::user::NewUserPayload,
+    utils::{serialize_dt, serialize_dt_option},
+};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
-    pub id: i64,
+    pub id: i32,
     pub name: Option<String>,
     pub nickname: String,
     pub email: String,
@@ -21,7 +22,7 @@ pub struct User {
     pub update_time: Option<DateTime<Utc>>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct PublicUser {
     pub name: Option<String>,
@@ -35,8 +36,9 @@ pub struct PublicUser {
 #[async_trait::async_trait]
 pub trait UserRepository {
     async fn create_user(&self, user: NewUserPayload) -> Result<PublicUser>;
-    async fn update_user(&self, user: User) -> Result<()>;
-    async fn get_user_by_nickname(&self, nickname: String) -> Result<PublicUser>;
+    async fn update_user(&self, id: i32, user: User) -> Result<()>;
+    async fn get_user_by_nickname(&self, nickname: String) -> Result<Option<PublicUser>>;
+    async fn get_user_by_id(&self, id: i32) -> Result<Option<PublicUser>>;
     async fn get_user_by_email(&self, email: String) -> Result<User>;
-    async fn delete_user(&self, id: i64) -> Result<()>;
+    async fn delete_user(&self, id: i32) -> Result<()>;
 }

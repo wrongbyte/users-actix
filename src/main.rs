@@ -7,6 +7,7 @@ mod utils;
 use std::sync::Arc;
 use std::env;
 use dotenv::dotenv;
+pub mod response;
 
 use actix_web::{web, App, HttpServer};
 use db::connect::connect;
