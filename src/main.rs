@@ -4,6 +4,7 @@ mod handlers;
 mod repositories;
 mod routes;
 mod utils;
+mod error;
 use std::sync::Arc;
 use std::env;
 use dotenv::dotenv;
