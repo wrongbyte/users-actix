@@ -45,17 +45,35 @@ impl UserRepository for SqlUserRepository {
     }
 
     async fn get_user_by_id(&self, id: i32) -> Result<Option<PublicUser>, RepositoryError> {
-        todo!()
+        let row = sqlx::query_as::<_, PublicUser>(
+            "SELECT name, nickname, email, bio, creation_time::TIMESTAMPTZ FROM users WHERE id = $1",
+        )
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await?;
+        Ok(row)
     }
 
     async fn get_user_by_email(
         &self,
         email: String,
     ) -> Result<Option<PublicUser>, RepositoryError> {
-        todo!()
+        let row = sqlx::query_as::<_, PublicUser>(
+            "SELECT name, nickname, email, bio, creation_time::TIMESTAMPTZ FROM users WHERE email = $1",
+        )
+        .bind(email)
+        .fetch_optional(&self.pool)
+        .await?;
+        Ok(row)
     }
 
     async fn delete_user(&self, id: i32) -> Result<(), RepositoryError> {
-        todo!()
+        sqlx::query(
+            "DELETE FROM users WHERE id = $1",
+        )
+        .bind(id)
+        .execute(&self.pool)
+        .await?;
+        Ok(())
     }
 }

@@ -48,6 +48,11 @@ async fn get_user_by_nickname(
     Ok(HttpResponse::Ok().json(user))
 }
 
-async fn delete_user(handler: web::Data<DynUserHandler>) -> Result<HttpResponse, AppError> {
-    Ok(HttpResponse::Ok().body("delete_user"))
+async fn delete_user(
+    params: web::Path<i32>,
+    handler: web::Data<DynUserHandler>,
+) -> Result<HttpResponse, AppError> {
+    let id = params.into_inner();
+    handler.delete_user(id).await?;
+    Ok(HttpResponse::Ok().into())
 }
