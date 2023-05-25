@@ -1,92 +1,61 @@
-use chrono::{DateTime, Utc};
-use http_problem::Result;
-use std::sync::Arc;
-use tokio_postgres::{Client, Row};
+use sqlx::PgPool;
 
-use crate::{
-    domain::user::{PublicUser, User, UserRepository},
-    routes::user::NewUserPayload,
+use crate::domain::user::{
+    payload::{NewUserPayload, UpdateUserPayload},
+    PublicUser, UserRepository,
 };
 
+use super::error::RepositoryError;
+
 pub struct SqlUserRepository {
-    pub client: Arc<Client>,
+    pub pool: PgPool,
 }
 
 #[async_trait::async_trait]
 impl UserRepository for SqlUserRepository {
-    async fn create_user(&self, user: NewUserPayload) -> Result<PublicUser> {
-        let row = self
-            .client
-            .query_one(
-                "INSERT INTO users (nickname, email, password) VALUES ($1, $2, $3) RETURNING name, nickname, email, bio, creation_time",
-                &[&user.nickname, &user.email, &user.password],
-            )
-            .await
-            .expect("Error on query");
-        let new_user = get_public_user_from_sql(row);
-        Ok(new_user)
+    async fn create_user(&self, user: NewUserPayload) -> Result<PublicUser, RepositoryError> {
+        let row = sqlx::query_as::<_, PublicUser>(
+            "INSERT INTO users (nickname, email, password, bio) VALUES ($1, $2, $3, $4)
+            RETURNING name, nickname, email, bio, creation_time::TIMESTAMPTZ",
+        )
+        .bind(user.nickname)
+        .bind(user.email)
+        .bind(user.password)
+        .bind(user.bio)
+        .fetch_one(&self.pool)
+        .await?;
+        Ok(row)
     }
 
-    async fn update_user(&self, id: i32, update_payload: User) -> Result<()> {
+    async fn update_user(&self, id: i32, user: UpdateUserPayload) -> Result<(), RepositoryError> {
         todo!()
     }
 
     async fn get_user_by_nickname(
         &self,
         nickname: String,
-    ) -> Result<Option<PublicUser>> {
-        let row = self
-            .client
-            .query_opt(
-                "SELECT name, nickname, email, bio, creation_time FROM users WHERE nickname = $1",
-                &[&nickname],
-            )
-            .await
-            .expect("Error on query");
-        if let Some(user) = row {
-            let public_user = get_public_user_from_sql(user);
-            return Ok(Some(public_user));
-        }
-        Ok(None)
-    }
-
-    async fn get_user_by_id(&self, id: i32) -> Result<Option<PublicUser>> {
-        let row = self
-        .client
-        .query_opt(
-            "SELECT name, nickname, email, bio, creation_time FROM users WHERE id = $1",
-            &[&id],
+    ) -> Result<Option<PublicUser>, RepositoryError> {
+        let row = sqlx::query_as::<_, PublicUser>(
+            "SELECT name, nickname, email, bio, creation_time::TIMESTAMPTZ FROM users WHERE nickname = $1",
         )
-        .await
-        .expect("Error on query");
-    if let Some(user) = row {
-        let public_user = get_public_user_from_sql(user);
-        return Ok(Some(public_user));
-    }
-    Ok(None)
+        .bind(nickname)
+        .fetch_optional(&self.pool)
+        .await?;
+        Ok(row)
     }
 
-    async fn get_user_by_email(&self, email: String) -> Result<User> {
+    async fn get_user_by_id(&self, id: i32) -> Result<Option<PublicUser>, RepositoryError> {
         todo!()
     }
 
-    async fn delete_user(&self, id: i32) -> Result<()> {
+    async fn get_user_by_email(
+        &self,
+        email: String,
+    ) -> Result<Option<PublicUser>, RepositoryError> {
         todo!()
     }
-}
 
-fn get_public_user_from_sql(row: Row) -> PublicUser {
-    let name: Option<String> = row.get(0);
-    let nickname: String = row.get(1);
-    let email: String = row.get(2);
-    let bio: Option<String> = row.get(3);
-    let creation_timestamp: chrono::NaiveDateTime = row.get(4);
-    let creation_time: DateTime<Utc> = DateTime::from_utc(creation_timestamp, Utc);
-    PublicUser {
-        name,
-        nickname,
-        email,
-        bio,
-        creation_time,
+    async fn delete_user(&self, id: i32) -> Result<(), RepositoryError> {
+        todo!()
     }
 }

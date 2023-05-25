@@ -1,10 +1,10 @@
 use std::fmt;
-use tokio_postgres::Error;
+use sqlx::Error;
 
 #[derive(Debug)]
 pub enum RepositoryError {
     NotFound,
-    Conflict,
+    Conflict(String),
     InternalError(Error),
 }
 
@@ -14,7 +14,7 @@ impl fmt::Display for RepositoryError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             RepositoryError::NotFound => write!(f, "Not found"),
-            RepositoryError::Conflict => write!(f, "Conflict"),
+            RepositoryError::Conflict(message) => write!(f, "Conflict: {message}"),
             RepositoryError::InternalError(error) => write!(f, "Internal error: {}", error),
         }
     }
