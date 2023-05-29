@@ -83,6 +83,7 @@ impl UserHandler for UserHandlerImpl {
         if user.is_none() {
             return Err(RepositoryError::NotFound);
         }
+        self.user_repository.delete_user(id).await?;
         Ok(())
     }
 }
