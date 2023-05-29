@@ -1,10 +1,13 @@
 use std::fmt;
 use sqlx::Error;
+use strum::EnumMessage;
+
+use super::ErrorMessage;
 
 #[derive(Debug)]
 pub enum RepositoryError {
     NotFound,
-    Conflict(String),
+    Conflict(ErrorMessage),
     InternalError(Error),
 }
 
@@ -14,7 +17,9 @@ impl fmt::Display for RepositoryError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             RepositoryError::NotFound => write!(f, "Not found"),
-            RepositoryError::Conflict(message) => write!(f, "Conflict: {message}"),
+            RepositoryError::Conflict(error_message) => {
+                let message = format!("{}", error_message.get_message().unwrap());
+                write!(f, "{message}")}
             RepositoryError::InternalError(error) => write!(f, "Internal error: {}", error),
         }
     }

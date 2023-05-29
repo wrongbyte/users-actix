@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use actix_web::{http::StatusCode, ResponseError, HttpResponse};
+use strum::EnumMessage;
 
 use crate::{response::GenericResponse, repositories::error::RepositoryError};
 
@@ -25,7 +26,7 @@ impl From<RepositoryError> for AppError {
                 r#type: ErrorType::NotFound,
             },
             RepositoryError::Conflict(message) => AppError {
-                message,
+                message : format!("{}", message.get_message().unwrap()),
                 r#type: ErrorType::Conflict,
             },
             RepositoryError::InternalError(error) => AppError {

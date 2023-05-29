@@ -1,9 +1,8 @@
-use sqlx::PgPool;
-
 use crate::domain::user::{
     payload::{NewUserPayload, UpdateUserPayload},
     PublicUser, UserRepository,
 };
+use sqlx::{PgPool, QueryBuilder, Postgres};
 
 use super::error::RepositoryError;
 
@@ -28,7 +27,10 @@ impl UserRepository for SqlUserRepository {
     }
 
     async fn update_user(&self, id: i32, user: UpdateUserPayload) -> Result<(), RepositoryError> {
-        todo!()
+        let mut query = get_update_query(user, id);
+        query.build().execute(&self.pool).await?;
+
+        Ok(())
     }
 
     async fn get_user_by_nickname(
@@ -68,12 +70,37 @@ impl UserRepository for SqlUserRepository {
     }
 
     async fn delete_user(&self, id: i32) -> Result<(), RepositoryError> {
-        sqlx::query(
-            "DELETE FROM users WHERE id = $1",
-        )
-        .bind(id)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("DELETE FROM users WHERE id = $1")
+            .bind(id)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
+}
+
+fn get_update_query(
+    user: UpdateUserPayload,
+    id: i32
+) -> QueryBuilder<'static, Postgres> {
+    let mut query_builder = QueryBuilder::new("UPDATE users SET");
+
+    let mut separated = query_builder.separated(", ");
+
+    if let Some(name) = user.name {
+        separated.push(" name = ");
+        separated.push_bind_unseparated(name);
+    };
+    if let Some(nickname) = user.nickname {
+        separated.push(" nickname = ");
+        separated.push_bind_unseparated(nickname);
+    };
+    if let Some(bio) = user.bio {
+        separated.push(" bio = ");
+        separated.push_bind_unseparated(bio);
+    };
+
+    separated.push_unseparated("WHERE id = ");
+    query_builder.push_bind(id);
+
+    query_builder
 }
