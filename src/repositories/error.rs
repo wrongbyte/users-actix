@@ -1,8 +1,7 @@
 use std::fmt;
 use sqlx::Error;
 use strum::EnumMessage;
-
-use super::ErrorMessage;
+use strum_macros;
 
 #[derive(Debug)]
 pub enum RepositoryError {
@@ -29,4 +28,13 @@ impl From<Error> for RepositoryError {
     fn from(error: Error) -> Self {
         RepositoryError::InternalError(error)
     }
+}
+
+#[derive(strum_macros::EnumMessage, Debug)]
+#[allow(dead_code)]
+pub enum ErrorMessage {
+    #[strum(message = "This nickname is already in use")]
+    ExistingNickame,
+    #[strum(message = "This email is already in use")]
+    ExistingEmail,
 }

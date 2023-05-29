@@ -1,4 +1,4 @@
-use crate::repositories::ErrorMessage::{ExistingNickame, ExistingEmail};
+use crate::repositories::error::ErrorMessage::{ExistingNickame, ExistingEmail};
 use crate::{
     domain::user::{
         payload::{NewUserPayload, UpdateUserPayload},
