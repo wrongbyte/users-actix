@@ -17,7 +17,7 @@ pub(crate) fn user_routes(cfg: &mut ServiceConfig) {
         web::scope("/users")
             .route("/", web::post().to(create_user))
             .route("/{userId}", web::patch().to(update_user_by_id))
-            .route("/{nickname}", web::get().to(get_user_by_nickname))
+            .route("/{userId}", web::get().to(get_user_by_id))
             .route("/{userId}", web::delete().to(delete_user)),
     );
 }
@@ -29,9 +29,7 @@ async fn create_user(
     let payload = body.into_inner();
 
     if let Err(e) = payload.validate() {
-        return Err(AppError::bad_request(format_error_msg(
-            e.field_errors(),
-        )));
+        return Err(AppError::bad_request(format_error_msg(e.field_errors())));
     }
 
     let new_user = handler.create_user(payload).await?;
@@ -47,22 +45,20 @@ async fn update_user_by_id(
     let payload = body.into_inner();
 
     if let Err(e) = payload.validate() {
-        return Err(AppError::bad_request(format_error_msg(
-            e.field_errors(),
-        )));
+        return Err(AppError::bad_request(format_error_msg(e.field_errors())));
     }
 
     handler.update_user_by_id(id, payload).await?;
     Ok(HttpResponse::Ok().into())
 }
 
-async fn get_user_by_nickname(
-    params: web::Path<String>,
+async fn get_user_by_id(
+    params: web::Path<Uuid>,
     handler: web::Data<DynUserHandler>,
 ) -> Result<HttpResponse, AppError> {
-    let nickname = params.into_inner();
+    let id = params.into_inner();
 
-    let user = handler.get_user_by_nickname(nickname).await?;
+    let user = handler.get_user_by_id(id).await?;
     Ok(HttpResponse::Ok().json(user))
 }
 

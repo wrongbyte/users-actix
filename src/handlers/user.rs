@@ -31,6 +31,11 @@ pub trait UserHandler {
         nickname: String,
     ) -> Result<Option<PublicUser>, RepositoryError>;
     async fn delete_user(&self, id: Uuid) -> Result<(), RepositoryError>;
+
+    async fn get_user_by_id(
+        &self,
+        id: Uuid,
+    ) -> Result<Option<PublicUser>, RepositoryError>;
 }
 
 #[async_trait::async_trait]
@@ -74,6 +79,17 @@ impl UserHandler for UserHandlerImpl {
         nickname: String,
     ) -> Result<Option<PublicUser>, RepositoryError> {
         let user = self.user_repository.get_user_by_nickname(nickname).await?;
+        if user.is_none() {
+            return Err(RepositoryError::NotFound);
+        }
+        Ok(user)
+    }
+
+    async fn get_user_by_id(
+        &self,
+        id: Uuid,
+    ) -> Result<Option<PublicUser>, RepositoryError> {
+        let user = self.user_repository.get_user_by_id(id).await?;
         if user.is_none() {
             return Err(RepositoryError::NotFound);
         }
