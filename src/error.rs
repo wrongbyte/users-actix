@@ -27,7 +27,7 @@ impl From<RepositoryError> for AppError {
                 r#type: ErrorType::NotFound,
             },
             RepositoryError::Conflict(message) => AppError {
-                message : format!("{}", message.get_message().unwrap()),
+                message : message.get_message().unwrap().to_string(),
                 r#type: ErrorType::Conflict,
             },
             RepositoryError::InternalError(error) => AppError {

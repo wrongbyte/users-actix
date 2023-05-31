@@ -17,7 +17,7 @@ impl fmt::Display for RepositoryError {
         match self {
             RepositoryError::NotFound => write!(f, "Not found"),
             RepositoryError::Conflict(error_message) => {
-                let message = format!("{}", error_message.get_message().unwrap());
+                let message = error_message.get_message().unwrap().to_string();
                 write!(f, "{message}")}
             RepositoryError::InternalError(error) => write!(f, "Internal error: {}", error),
         }
