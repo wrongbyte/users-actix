@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 use crate::repositories::error::ErrorMessage::{ExistingNickame, ExistingEmail};
 use crate::{
     domain::user::{
@@ -20,7 +22,7 @@ pub trait UserHandler {
 
     async fn update_user_by_id(
         &self,
-        id: i32,
+        id: Uuid,
         update_payload: UpdateUserPayload,
     ) -> Result<(), RepositoryError>;
 
@@ -28,7 +30,7 @@ pub trait UserHandler {
         &self,
         nickname: String,
     ) -> Result<Option<PublicUser>, RepositoryError>;
-    async fn delete_user(&self, id: i32) -> Result<(), RepositoryError>;
+    async fn delete_user(&self, id: Uuid) -> Result<(), RepositoryError>;
 }
 
 #[async_trait::async_trait]
@@ -50,7 +52,7 @@ impl UserHandler for UserHandlerImpl {
 
     async fn update_user_by_id(
         &self,
-        id: i32,
+        id: Uuid,
         update_payload: UpdateUserPayload,
     ) -> Result<(), RepositoryError> {
         let user = self.user_repository.get_user_by_id(id).await?;
@@ -78,7 +80,7 @@ impl UserHandler for UserHandlerImpl {
         Ok(user)
     }
 
-    async fn delete_user(&self, id: i32) -> Result<(), RepositoryError> {
+    async fn delete_user(&self, id: Uuid) -> Result<(), RepositoryError> {
         let user = self.user_repository.get_user_by_id(id).await?;
         if user.is_none() {
             return Err(RepositoryError::NotFound);

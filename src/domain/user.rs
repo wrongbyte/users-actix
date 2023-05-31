@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::{
     repositories::error::RepositoryError,
@@ -11,7 +12,7 @@ use self::payload::{NewUserPayload, UpdateUserPayload};
 #[derive(sqlx::FromRow, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
-    pub id: i32,
+    pub id: Uuid,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     pub nickname: String,
@@ -28,6 +29,7 @@ pub struct User {
 #[derive(sqlx::FromRow, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct PublicUser {
+    pub id: Uuid,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     pub nickname: String,
@@ -41,15 +43,15 @@ pub struct PublicUser {
 #[async_trait::async_trait]
 pub trait UserRepository {
     async fn create_user(&self, user: NewUserPayload) -> Result<PublicUser, RepositoryError>;
-    async fn update_user(&self, id: i32, user: UpdateUserPayload) -> Result<(), RepositoryError>;
+    async fn update_user(&self, id: Uuid, user: UpdateUserPayload) -> Result<(), RepositoryError>;
     async fn get_user_by_nickname(
         &self,
         nickname: String,
     ) -> Result<Option<PublicUser>, RepositoryError>;
-    async fn get_user_by_id(&self, id: i32) -> Result<Option<PublicUser>, RepositoryError>;
+    async fn get_user_by_id(&self, id: Uuid) -> Result<Option<PublicUser>, RepositoryError>;
     async fn get_user_by_email(&self, email: String)
         -> Result<Option<PublicUser>, RepositoryError>;
-    async fn delete_user(&self, id: i32) -> Result<(), RepositoryError>;
+    async fn delete_user(&self, id: Uuid) -> Result<(), RepositoryError>;
 }
 
 pub mod payload {

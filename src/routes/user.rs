@@ -3,6 +3,7 @@ use actix_web::{
     web::{self, ServiceConfig},
     HttpResponse,
 };
+use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
@@ -38,7 +39,7 @@ async fn create_user(
 }
 
 async fn update_user_by_id(
-    params: web::Path<i32>,
+    params: web::Path<Uuid>,
     body: web::Json<UpdateUserPayload>,
     handler: web::Data<DynUserHandler>,
 ) -> Result<HttpResponse, AppError> {
@@ -66,7 +67,7 @@ async fn get_user_by_nickname(
 }
 
 async fn delete_user(
-    params: web::Path<i32>,
+    params: web::Path<Uuid>,
     handler: web::Data<DynUserHandler>,
 ) -> Result<HttpResponse, AppError> {
     let id = params.into_inner();
