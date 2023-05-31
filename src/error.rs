@@ -10,6 +10,7 @@ pub enum ErrorType {
     NotFound,
     Conflict,
     InternalError,
+    BadRequest
 }
 
 #[derive(Debug)]
@@ -37,6 +38,15 @@ impl From<RepositoryError> for AppError {
     }
 }
 
+impl AppError {
+    pub fn bad_request(message: String) -> AppError {
+        AppError {
+            message,
+            r#type: ErrorType::BadRequest
+        }
+    }
+}
+
 impl Display for AppError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.message)
@@ -49,6 +59,7 @@ impl ResponseError for AppError {
             ErrorType::NotFound => StatusCode::NOT_FOUND,
             ErrorType::Conflict => StatusCode::CONFLICT,
             ErrorType::InternalError => StatusCode::INTERNAL_SERVER_ERROR,
+            ErrorType::BadRequest => StatusCode::BAD_REQUEST
         }
     }
 

@@ -1,7 +1,9 @@
+use crate::domain::user::validation::format_error_msg;
 use actix_web::{
     web::{self, ServiceConfig},
     HttpResponse,
 };
+use validator::Validate;
 
 use crate::{
     domain::user::payload::{NewUserPayload, UpdateUserPayload},
@@ -24,6 +26,13 @@ async fn create_user(
     handler: web::Data<DynUserHandler>,
 ) -> Result<HttpResponse, AppError> {
     let payload = body.into_inner();
+
+    if let Err(e) = payload.validate() {
+        return Err(AppError::bad_request(format_error_msg(
+            e.field_errors(),
+        )));
+    }
+
     let new_user = handler.create_user(payload).await?;
     Ok(HttpResponse::Ok().json(new_user))
 }
@@ -35,6 +44,13 @@ async fn update_user_by_id(
 ) -> Result<HttpResponse, AppError> {
     let id = params.into_inner();
     let payload = body.into_inner();
+
+    if let Err(e) = payload.validate() {
+        return Err(AppError::bad_request(format_error_msg(
+            e.field_errors(),
+        )));
+    }
+
     handler.update_user_by_id(id, payload).await?;
     Ok(HttpResponse::Ok().into())
 }
@@ -44,6 +60,7 @@ async fn get_user_by_nickname(
     handler: web::Data<DynUserHandler>,
 ) -> Result<HttpResponse, AppError> {
     let nickname = params.into_inner();
+
     let user = handler.get_user_by_nickname(nickname).await?;
     Ok(HttpResponse::Ok().json(user))
 }

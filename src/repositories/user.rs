@@ -2,7 +2,7 @@ use crate::domain::user::{
     payload::{NewUserPayload, UpdateUserPayload},
     PublicUser, UserRepository,
 };
-use sqlx::{PgPool, QueryBuilder, Postgres};
+use sqlx::{PgPool, Postgres, QueryBuilder};
 
 use super::error::RepositoryError;
 
@@ -14,9 +14,10 @@ pub struct SqlUserRepository {
 impl UserRepository for SqlUserRepository {
     async fn create_user(&self, user: NewUserPayload) -> Result<PublicUser, RepositoryError> {
         let row = sqlx::query_as::<_, PublicUser>(
-            "INSERT INTO users (nickname, email, password, bio) VALUES ($1, $2, $3, $4)
+            "INSERT INTO users (name, nickname, email, password, bio) VALUES ($1, $2, $3, $4, $5)
             RETURNING name, nickname, email, bio, creation_time::TIMESTAMPTZ",
         )
+        .bind(user.name)
         .bind(user.nickname)
         .bind(user.email)
         .bind(user.password)
@@ -78,10 +79,7 @@ impl UserRepository for SqlUserRepository {
     }
 }
 
-fn get_update_query(
-    user: UpdateUserPayload,
-    id: i32
-) -> QueryBuilder<'static, Postgres> {
+fn get_update_query(user: UpdateUserPayload, id: i32) -> QueryBuilder<'static, Postgres> {
     let mut query_builder = QueryBuilder::new("UPDATE users SET");
 
     let mut separated = query_builder.separated(", ");

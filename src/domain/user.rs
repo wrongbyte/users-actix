@@ -8,8 +8,7 @@ use crate::{
 
 use self::payload::{NewUserPayload, UpdateUserPayload};
 
-#[derive(sqlx::FromRow)]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(sqlx::FromRow, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     pub id: i32,
@@ -26,8 +25,7 @@ pub struct User {
     pub update_time: Option<DateTime<Utc>>,
 }
 
-#[derive(sqlx::FromRow)]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(sqlx::FromRow, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct PublicUser {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -55,23 +53,57 @@ pub trait UserRepository {
 }
 
 pub mod payload {
-    use serde::{Serialize, Deserialize};
+    use regex::Regex;
+    use lazy_static::lazy_static;
+    use serde::{Deserialize, Serialize};
+    use validator::Validate;
 
-    #[derive(sqlx::FromRow)]
-    #[derive(Serialize, Deserialize)]
+    lazy_static! {
+        static ref NICKNAME_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9_]+$").unwrap(); 
+    }
+
+    #[derive(sqlx::FromRow, Serialize, Deserialize, Validate)]
     pub struct NewUserPayload {
+        #[validate(length(min = 3, max = 15))]
         pub name: Option<String>,
+        #[validate(regex = "NICKNAME_REGEX")]
         pub nickname: String,
+        #[validate(email)]
         pub email: String,
+        #[validate(length(min = 8))]
         pub password: String,
+        #[validate(length(max = 250))]
         pub bio: Option<String>,
     }
 
-    #[derive(sqlx::FromRow)]
-    #[derive(Serialize, Deserialize, Clone)]
+    #[derive(sqlx::FromRow, Serialize, Deserialize, Clone, Validate)]
     pub struct UpdateUserPayload {
+        #[validate(length(min = 3, max = 15))]
         pub name: Option<String>,
+        #[validate(regex = "NICKNAME_REGEX")]
         pub nickname: Option<String>,
+        #[validate(length(max = 250))]
         pub bio: Option<String>,
+    }
+}
+
+pub mod validation {
+    use std::collections::HashMap;
+
+    use validator::ValidationError;
+
+    pub fn format_error_msg(
+        hash_map: HashMap<&'static str, &Vec<ValidationError>>,
+    ) -> String {
+        let mut error_fields_vec: Vec<String> = vec![];
+        for (key, _) in hash_map.iter() {
+            error_fields_vec.push(key.to_string())
+        }
+        let fields = error_fields_vec
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        format!("The following fields contain validation errors: {}", fields)
     }
 }
