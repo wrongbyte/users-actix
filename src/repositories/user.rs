@@ -1,7 +1,8 @@
 use crate::domain::user::{
     payload::{NewUserPayload, UpdateUserPayload},
-    PublicUser, UserRepository,
+    PublicUser, UserRepository, password::hash_password,
 };
+use chrono::Utc;
 use sqlx::{PgPool, Postgres, QueryBuilder};
 use uuid::Uuid;
 
@@ -15,15 +16,16 @@ pub struct SqlUserRepository {
 impl UserRepository for SqlUserRepository {
     async fn create_user(&self, user: NewUserPayload) -> Result<PublicUser, RepositoryError> {
         let uuid = Uuid::new_v4();
+        let hashed_password = hash_password(user.password)?;
         let row = sqlx::query_as::<_, PublicUser>(
             "INSERT INTO users (id, name, nickname, email, password, bio) VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING name, nickname, email, bio, creation_time::TIMESTAMPTZ",
+            RETURNING id, name, nickname, email, bio, creation_time::TIMESTAMPTZ",
         )
         .bind(uuid)
         .bind(user.name)
         .bind(user.nickname)
         .bind(user.email)
-        .bind(user.password)
+        .bind(hashed_password)
         .bind(user.bio)
         .fetch_one(&self.pool)
         .await?;
@@ -99,6 +101,10 @@ fn get_update_query(user: UpdateUserPayload, id: Uuid) -> QueryBuilder<'static, 
         separated.push(" bio = ");
         separated.push_bind_unseparated(bio);
     };
+
+    let now = Utc::now();
+    separated.push(" update_time = ");
+    separated.push_bind_unseparated(now);
 
     separated.push_unseparated("WHERE id = ");
     query_builder.push_bind(id);

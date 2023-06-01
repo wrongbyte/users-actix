@@ -1,3 +1,7 @@
+use argon2::{
+    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
+    Argon2,
+};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -55,13 +59,13 @@ pub trait UserRepository {
 }
 
 pub mod payload {
-    use regex::Regex;
     use lazy_static::lazy_static;
+    use regex::Regex;
     use serde::{Deserialize, Serialize};
     use validator::Validate;
 
     lazy_static! {
-        static ref NICKNAME_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9_]+$").unwrap(); 
+        static ref NICKNAME_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9_]+$").unwrap();
     }
 
     #[derive(sqlx::FromRow, Serialize, Deserialize, Validate)]
@@ -94,9 +98,7 @@ pub mod validation {
 
     use validator::ValidationError;
 
-    pub fn format_error_msg(
-        hash_map: HashMap<&'static str, &Vec<ValidationError>>,
-    ) -> String {
+    pub fn format_error_msg(hash_map: HashMap<&'static str, &Vec<ValidationError>>) -> String {
         let mut error_fields_vec: Vec<String> = vec![];
         for (key, _) in hash_map.iter() {
             error_fields_vec.push(key.to_string())
@@ -107,5 +109,19 @@ pub mod validation {
             .collect::<Vec<_>>()
             .join(",");
         format!("The following fields contain validation errors: {}", fields)
+    }
+}
+
+pub mod password {
+    use argon2::password_hash::Error;
+
+    use super::*;
+    pub fn hash_password(original: String) -> Result<String, Error> {
+        let salt = SaltString::generate(&mut OsRng);
+        let argon2 = Argon2::default();
+        let password_hash = argon2
+            .hash_password(original.as_bytes(), &salt)?
+            .to_string();
+        Ok(password_hash)
     }
 }

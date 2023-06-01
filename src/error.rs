@@ -30,7 +30,11 @@ impl From<RepositoryError> for AppError {
                 message : message.get_message().unwrap().to_string(),
                 r#type: ErrorType::Conflict,
             },
-            RepositoryError::InternalError(error) => AppError {
+            RepositoryError::SqlxError(error) => AppError {
+                message: format!("Internal error: {}", error),
+                r#type: ErrorType::InternalError,
+            },
+            RepositoryError::HashingError(error) => AppError {
                 message: format!("Internal error: {}", error),
                 r#type: ErrorType::InternalError,
             },
