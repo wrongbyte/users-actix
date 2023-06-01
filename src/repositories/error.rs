@@ -1,6 +1,6 @@
-use std::fmt;
-use sqlx::Error as SqlxError;
 use argon2::password_hash::Error as Argon2Error;
+use sqlx::Error as SqlxError;
+use std::fmt;
 use strum::EnumMessage;
 use strum_macros;
 
@@ -9,7 +9,7 @@ pub enum RepositoryError {
     NotFound,
     Conflict(ErrorMessage),
     SqlxError(SqlxError),
-    HashingError(Argon2Error)
+    HashingError(Argon2Error),
 }
 
 impl std::error::Error for RepositoryError {}
@@ -20,7 +20,8 @@ impl fmt::Display for RepositoryError {
             RepositoryError::NotFound => write!(f, "Not found"),
             RepositoryError::Conflict(error_message) => {
                 let message = error_message.get_message().unwrap().to_string();
-                write!(f, "{message}")}
+                write!(f, "{message}")
+            }
             RepositoryError::SqlxError(error) => write!(f, "Internal error: {}", error),
             RepositoryError::HashingError(error) => write!(f, "Internal error: {}", error),
         }

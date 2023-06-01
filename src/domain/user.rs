@@ -108,7 +108,7 @@ pub mod validation {
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
             .join(",");
-        format!("The following fields contain validation errors: {}", fields)
+        format!("The following fields contain validation errors: {}", fields) //TODO: return better error messages because this thing is currently despicable
     }
 }
 
