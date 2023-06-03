@@ -33,6 +33,7 @@ async fn login_user(
 
     let user_uuid = handler.get_user_by_login(payload).await?;
 
+    // TODO: refactor, im not sure if this logic should be at this layer
     let jwt_user = create_jwt(user_uuid).map_err(|_| AppError {
         message: "Internal Error".to_string(),
         r#type: crate::error::ErrorType::InternalError,

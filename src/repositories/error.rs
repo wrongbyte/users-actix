@@ -1,5 +1,4 @@
 use argon2::password_hash::Error as Argon2Error;
-use jsonwebtoken::errors::Error as JwtError;
 use sqlx::Error as SqlxError;
 use std::fmt;
 use strum::EnumMessage;
@@ -11,7 +10,6 @@ pub enum RepositoryError {
     Conflict(ErrorMessage),
     SqlxError(SqlxError),
     HashingError(Argon2Error),
-    JwtError(JwtError)
 }
 
 impl std::error::Error for RepositoryError {}
@@ -26,7 +24,6 @@ impl fmt::Display for RepositoryError {
             }
             RepositoryError::SqlxError(error) => write!(f, "Internal error: {}", error),
             RepositoryError::HashingError(error) => write!(f, "Internal error: {}", error),
-            RepositoryError::JwtError(error) => write!(f, "Internal error: {}", error),
         }
     }
 }

@@ -44,11 +44,7 @@ impl From<RepositoryError> for AppError {
                     message: format!("Internal error: {}", error),
                     r#type: ErrorType::InternalError,
                 },
-            },
-            RepositoryError::JwtError(error) => AppError {
-                message: format!("Internal error: {}", error),
-                r#type: ErrorType::InternalError,
-            },
+            }
         }
     }
 }
