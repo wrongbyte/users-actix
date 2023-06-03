@@ -45,9 +45,15 @@ impl From<RepositoryError> for AppError {
                     r#type: ErrorType::InternalError,
                 },
             },
+            RepositoryError::JwtError(error) => AppError {
+                message: format!("Internal error: {}", error),
+                r#type: ErrorType::InternalError,
+            },
         }
     }
 }
+
+
 
 impl AppError {
     pub fn bad_request(message: String) -> AppError {

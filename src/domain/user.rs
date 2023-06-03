@@ -58,7 +58,7 @@ pub trait UserRepository {
     async fn get_user_by_login(
         &self,
         login_payload: LoginUserPayload,
-    ) -> Result<Option<PublicUser>, RepositoryError>;
+    ) -> Result<PublicUser, RepositoryError>;
     async fn delete_user(&self, id: Uuid) -> Result<(), RepositoryError>;
 }
 

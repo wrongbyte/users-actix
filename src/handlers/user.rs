@@ -39,7 +39,7 @@ pub trait UserHandler {
     async fn get_user_by_login(
         &self,
         login_payload: LoginUserPayload,
-    ) -> Result<(), RepositoryError>;
+    ) -> Result<Uuid, RepositoryError>;
 }
 
 #[async_trait::async_trait]
@@ -115,7 +115,7 @@ impl UserHandler for UserHandlerImpl {
     async fn get_user_by_login(
         &self,
         login_payload: LoginUserPayload,
-    ) -> Result<(), RepositoryError> {
+    ) -> Result<Uuid, RepositoryError> {
         let user = self
             .user_repository
             .get_user_by_email(login_payload.email.clone())
@@ -125,10 +125,11 @@ impl UserHandler for UserHandlerImpl {
             return Err(RepositoryError::NotFound);
         }
 
-        self.user_repository
+        let user = self
+            .user_repository
             .get_user_by_login(login_payload)
             .await?;
 
-        Ok(())
+        Ok(user.id)
     }
 }

@@ -92,12 +92,12 @@ impl UserRepository for SqlUserRepository {
     async fn get_user_by_login(
         &self,
         login_payload: LoginUserPayload,
-    ) -> Result<Option<PublicUser>, RepositoryError> {
+    ) -> Result<PublicUser, RepositoryError> {
         let email = login_payload.email;
         let payload_password = login_payload.password;
 
         let row = sqlx::query_as::<_, UserPassword>("SELECT password FROM users WHERE email = $1")
-            .bind(email)
+            .bind(email.clone())
             .fetch_one(&self.pool)
             .await?;
 
@@ -105,16 +105,14 @@ impl UserRepository for SqlUserRepository {
 
         verify_passwords(payload_password, hashed_password)?;
 
-        let user = PublicUser {
-            id: Uuid::new_v4(),
-            name: Some("Joao Teste".to_string()),
-            nickname: "joaodefault".to_string(),
-            email: "sseila@gmail.com".to_string(),
-            bio: Some("Joao Teste".to_string()),
-            creation_time: Utc::now(),
-        };
+        let row = sqlx::query_as::<_, PublicUser>(
+            "SELECT id, name, nickname, email, bio, creation_time::TIMESTAMPTZ FROM users WHERE email = $1",
+        )
+        .bind(email)
+        .fetch_one(&self.pool)
+        .await?;
 
-        Ok(Some(user))
+        Ok(row)
     }
 }
 

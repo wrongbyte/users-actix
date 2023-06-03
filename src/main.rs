@@ -4,6 +4,7 @@ mod repositories;
 mod routes;
 mod utils;
 mod error;
+mod auth;
 use std::sync::Arc;
 use std::env;
 use dotenv::dotenv;
