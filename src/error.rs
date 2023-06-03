@@ -1,16 +1,17 @@
 use std::fmt::Display;
 
-use actix_web::{http::StatusCode, ResponseError, HttpResponse};
+use actix_web::{http::StatusCode, HttpResponse, ResponseError};
+use argon2::password_hash::Error;
 use strum::EnumMessage;
 
-use crate::{response::GenericResponse, repositories::error::RepositoryError};
+use crate::{repositories::error::RepositoryError, response::GenericResponse};
 
 #[derive(Debug)]
 pub enum ErrorType {
     NotFound,
     Conflict,
     InternalError,
-    BadRequest
+    BadRequest,
 }
 
 #[derive(Debug)]
@@ -27,16 +28,22 @@ impl From<RepositoryError> for AppError {
                 r#type: ErrorType::NotFound,
             },
             RepositoryError::Conflict(message) => AppError {
-                message : message.get_message().unwrap().to_string(),
+                message: message.get_message().unwrap().to_string(),
                 r#type: ErrorType::Conflict,
             },
             RepositoryError::SqlxError(error) => AppError {
                 message: format!("Internal error: {}", error),
                 r#type: ErrorType::InternalError,
             },
-            RepositoryError::HashingError(error) => AppError {
-                message: format!("Internal error: {}", error),
-                r#type: ErrorType::InternalError,
+            RepositoryError::HashingError(error) => match error {
+                Error::Password => AppError {
+                    message: format!("Invalid password"),
+                    r#type: ErrorType::BadRequest,
+                },
+                _ => AppError {
+                    message: format!("Internal error: {}", error),
+                    r#type: ErrorType::InternalError,
+                },
             },
         }
     }
@@ -46,7 +53,7 @@ impl AppError {
     pub fn bad_request(message: String) -> AppError {
         AppError {
             message,
-            r#type: ErrorType::BadRequest
+            r#type: ErrorType::BadRequest,
         }
     }
 }
@@ -63,15 +70,14 @@ impl ResponseError for AppError {
             ErrorType::NotFound => StatusCode::NOT_FOUND,
             ErrorType::Conflict => StatusCode::CONFLICT,
             ErrorType::InternalError => StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorType::BadRequest => StatusCode::BAD_REQUEST
+            ErrorType::BadRequest => StatusCode::BAD_REQUEST,
         }
     }
 
     fn error_response(&self) -> HttpResponse {
         HttpResponse::build(self.status_code()).json(GenericResponse {
             status: self.status_code().as_u16(),
-            message: self.message.to_string()
+            message: self.message.to_string(),
         })
     }
-
 }

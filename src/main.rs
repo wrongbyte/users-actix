@@ -13,7 +13,7 @@ use actix_web::{web, App, HttpServer};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use handlers::user::{DynUserHandler, UserHandlerImpl};
 use repositories::user::SqlUserRepository;
-use routes::user::user_routes;
+use routes::{user::user_routes, auth::auth_routes};
 
 #[tokio::main]
 async fn main() {
@@ -37,6 +37,7 @@ async fn main() {
         App::new()
             .app_data(user_handler.clone())
             .configure(user_routes)
+            .configure(auth_routes)
     })
     .bind(("127.0.0.1", port.parse::<u16>().unwrap()))
     .expect("Unable to run server on port {port}. Quitting")

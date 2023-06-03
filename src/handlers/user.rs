@@ -1,6 +1,7 @@
 use uuid::Uuid;
 
-use crate::repositories::error::ErrorMessage::{ExistingNickame, ExistingEmail};
+use crate::domain::user::payload::LoginUserPayload;
+use crate::repositories::error::ErrorMessage::{ExistingEmail, ExistingNickame};
 use crate::{
     domain::user::{
         payload::{NewUserPayload, UpdateUserPayload},
@@ -30,23 +31,32 @@ pub trait UserHandler {
         &self,
         nickname: String,
     ) -> Result<Option<PublicUser>, RepositoryError>;
+
+    async fn get_user_by_id(&self, id: Uuid) -> Result<Option<PublicUser>, RepositoryError>;
+
     async fn delete_user(&self, id: Uuid) -> Result<(), RepositoryError>;
 
-    async fn get_user_by_id(
+    async fn get_user_by_login(
         &self,
-        id: Uuid,
-    ) -> Result<Option<PublicUser>, RepositoryError>;
+        login_payload: LoginUserPayload,
+    ) -> Result<(), RepositoryError>;
 }
 
 #[async_trait::async_trait]
 impl UserHandler for UserHandlerImpl {
     async fn create_user(&self, new_user: NewUserPayload) -> Result<PublicUser, RepositoryError> {
-        let user_with_nickname = self.user_repository.get_user_by_nickname(new_user.nickname.clone()).await?;
+        let user_with_nickname = self
+            .user_repository
+            .get_user_by_nickname(new_user.nickname.clone())
+            .await?;
         if user_with_nickname.is_some() {
             return Err(RepositoryError::Conflict(ExistingNickame));
         }
 
-        let user_with_email = self.user_repository.get_user_by_email(new_user.email.clone()).await?;
+        let user_with_email = self
+            .user_repository
+            .get_user_by_email(new_user.email.clone())
+            .await?;
         if user_with_email.is_some() {
             return Err(RepositoryError::Conflict(ExistingEmail));
         }
@@ -85,10 +95,7 @@ impl UserHandler for UserHandlerImpl {
         Ok(user)
     }
 
-    async fn get_user_by_id(
-        &self,
-        id: Uuid,
-    ) -> Result<Option<PublicUser>, RepositoryError> {
+    async fn get_user_by_id(&self, id: Uuid) -> Result<Option<PublicUser>, RepositoryError> {
         let user = self.user_repository.get_user_by_id(id).await?;
         if user.is_none() {
             return Err(RepositoryError::NotFound);
@@ -102,6 +109,26 @@ impl UserHandler for UserHandlerImpl {
             return Err(RepositoryError::NotFound);
         }
         self.user_repository.delete_user(id).await?;
+        Ok(())
+    }
+
+    async fn get_user_by_login(
+        &self,
+        login_payload: LoginUserPayload,
+    ) -> Result<(), RepositoryError> {
+        let user = self
+            .user_repository
+            .get_user_by_email(login_payload.email.clone())
+            .await?;
+
+        if user.is_none() {
+            return Err(RepositoryError::NotFound);
+        }
+
+        self.user_repository
+            .get_user_by_login(login_payload)
+            .await?;
+
         Ok(())
     }
 }

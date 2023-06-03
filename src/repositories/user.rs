@@ -1,6 +1,7 @@
 use crate::domain::user::{
-    payload::{NewUserPayload, UpdateUserPayload},
-    PublicUser, UserRepository, password::hash_password,
+    password::{hash_password, verify_passwords},
+    payload::{LoginUserPayload, NewUserPayload, UpdateUserPayload},
+    PublicUser, UserRepository,
 };
 use chrono::Utc;
 use sqlx::{PgPool, Postgres, QueryBuilder};
@@ -10,6 +11,11 @@ use super::error::RepositoryError;
 
 pub struct SqlUserRepository {
     pub pool: PgPool,
+}
+
+#[derive(sqlx::FromRow)]
+struct UserPassword {
+    password: String,
 }
 
 #[async_trait::async_trait]
@@ -81,6 +87,34 @@ impl UserRepository for SqlUserRepository {
             .execute(&self.pool)
             .await?;
         Ok(())
+    }
+
+    async fn get_user_by_login(
+        &self,
+        login_payload: LoginUserPayload,
+    ) -> Result<Option<PublicUser>, RepositoryError> {
+        let email = login_payload.email;
+        let payload_password = login_payload.password;
+
+        let row = sqlx::query_as::<_, UserPassword>("SELECT password FROM users WHERE email = $1")
+            .bind(email)
+            .fetch_one(&self.pool)
+            .await?;
+
+        let hashed_password = row.password;
+
+        verify_passwords(payload_password, hashed_password)?;
+
+        let user = PublicUser {
+            id: Uuid::new_v4(),
+            name: Some("Joao Teste".to_string()),
+            nickname: "joaodefault".to_string(),
+            email: "sseila@gmail.com".to_string(),
+            bio: Some("Joao Teste".to_string()),
+            creation_time: Utc::now(),
+        };
+
+        Ok(Some(user))
     }
 }
 

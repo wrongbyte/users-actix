@@ -11,7 +11,7 @@ use crate::{
     utils::{serialize_dt, serialize_dt_option},
 };
 
-use self::payload::{NewUserPayload, UpdateUserPayload};
+use self::payload::{LoginUserPayload, NewUserPayload, UpdateUserPayload};
 
 #[derive(sqlx::FromRow, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -55,6 +55,10 @@ pub trait UserRepository {
     async fn get_user_by_id(&self, id: Uuid) -> Result<Option<PublicUser>, RepositoryError>;
     async fn get_user_by_email(&self, email: String)
         -> Result<Option<PublicUser>, RepositoryError>;
+    async fn get_user_by_login(
+        &self,
+        login_payload: LoginUserPayload,
+    ) -> Result<Option<PublicUser>, RepositoryError>;
     async fn delete_user(&self, id: Uuid) -> Result<(), RepositoryError>;
 }
 
@@ -91,6 +95,14 @@ pub mod payload {
         #[validate(length(max = 250))]
         pub bio: Option<String>,
     }
+
+    #[derive(Serialize, Deserialize, Validate)]
+    pub struct LoginUserPayload {
+        #[validate(email)]
+        pub email: String,
+        #[validate(length(min = 8))]
+        pub password: String,
+    }
 }
 
 pub mod validation {
@@ -113,15 +125,22 @@ pub mod validation {
 }
 
 pub mod password {
-    use argon2::password_hash::Error;
+    use argon2::{password_hash::Error, PasswordHash, PasswordVerifier};
 
     use super::*;
     pub fn hash_password(original: String) -> Result<String, Error> {
-        let salt = SaltString::generate(&mut OsRng);
         let argon2 = Argon2::default();
+        let salt = SaltString::generate(&mut OsRng);
         let password_hash = argon2
             .hash_password(original.as_bytes(), &salt)?
             .to_string();
         Ok(password_hash)
+    }
+
+    pub fn verify_passwords(input_password: String, db_password: String) -> Result<(), Error> {
+        let argon2 = Argon2::default();
+        let parsed_hash = PasswordHash::new(&db_password).unwrap();
+        argon2.verify_password(input_password.as_bytes(), &parsed_hash)?;
+        Ok(())
     }
 }
