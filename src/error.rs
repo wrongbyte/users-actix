@@ -49,8 +49,6 @@ impl From<RepositoryError> for AppError {
     }
 }
 
-
-
 impl AppError {
     pub fn bad_request(message: String) -> AppError {
         AppError {

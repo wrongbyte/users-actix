@@ -1,7 +1,7 @@
-use crate::domain::user::validation::format_error_msg;
+use crate::{auth::get_id_auth_header, domain::user::validation::format_error_msg};
 use actix_web::{
     web::{self, ServiceConfig},
-    HttpResponse,
+    HttpRequest, HttpResponse,
 };
 use uuid::Uuid;
 use validator::Validate;
@@ -40,16 +40,27 @@ async fn update_user_by_id(
     params: web::Path<Uuid>,
     body: web::Json<UpdateUserPayload>,
     handler: web::Data<DynUserHandler>,
+    req: HttpRequest,
 ) -> Result<HttpResponse, AppError> {
     let id = params.into_inner();
     let payload = body.into_inner();
 
-    if let Err(e) = payload.validate() {
-        return Err(AppError::bad_request(format_error_msg(e.field_errors())));
-    }
+    match req.headers().get("Authorization") {
+        Some(auth_header) => {
+            let uuid = get_id_auth_header(auth_header)?;
+            println!("uuid: {:?}", uuid);
+            if uuid != id {
+                return Err(AppError::bad_request("Unauthorized".to_string()));
+            }
+            if let Err(e) = payload.validate() {
+                return Err(AppError::bad_request(format_error_msg(e.field_errors())));
+            }
 
-    handler.update_user_by_id(id, payload).await?;
-    Ok(HttpResponse::Ok().into())
+            handler.update_user_by_id(id, payload).await?;
+            Ok(HttpResponse::Ok().into())
+        }
+        None => Ok(HttpResponse::Unauthorized().body("Unauthorized")),
+    }
 }
 
 async fn get_user_by_id(
