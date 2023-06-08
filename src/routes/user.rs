@@ -22,6 +22,7 @@ pub(crate) fn user_routes(cfg: &mut ServiceConfig) {
     );
 }
 
+#[tracing::instrument(skip(handler))]
 async fn create_user(
     body: web::Json<NewUserPayload>,
     handler: web::Data<DynUserHandler>,
@@ -36,6 +37,7 @@ async fn create_user(
     Ok(HttpResponse::Ok().json(new_user))
 }
 
+#[tracing::instrument(skip(handler))]
 async fn update_user_by_id(
     params: web::Path<Uuid>,
     body: web::Json<UpdateUserPayload>,
@@ -63,6 +65,7 @@ async fn update_user_by_id(
     }
 }
 
+#[tracing::instrument(skip(handler))]
 async fn get_user_by_id(
     params: web::Path<Uuid>,
     handler: web::Data<DynUserHandler>,
@@ -73,6 +76,7 @@ async fn get_user_by_id(
     Ok(HttpResponse::Ok().json(user))
 }
 
+#[tracing::instrument(skip(handler))]
 async fn delete_user(
     params: web::Path<Uuid>,
     handler: web::Data<DynUserHandler>,

@@ -72,7 +72,7 @@ pub mod payload {
         static ref NICKNAME_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9_]+$").unwrap();
     }
 
-    #[derive(sqlx::FromRow, Serialize, Deserialize, Validate)]
+    #[derive(sqlx::FromRow, Serialize, Deserialize, Validate, Debug)]
     pub struct NewUserPayload {
         #[validate(length(min = 3, max = 15))]
         pub name: Option<String>,
@@ -86,7 +86,7 @@ pub mod payload {
         pub bio: Option<String>,
     }
 
-    #[derive(sqlx::FromRow, Serialize, Deserialize, Clone, Validate)]
+    #[derive(sqlx::FromRow, Serialize, Deserialize, Clone, Validate, Debug)]
     pub struct UpdateUserPayload {
         #[validate(length(min = 3, max = 15))]
         pub name: Option<String>,
@@ -96,7 +96,7 @@ pub mod payload {
         pub bio: Option<String>,
     }
 
-    #[derive(Serialize, Deserialize, Validate)]
+    #[derive(Serialize, Deserialize, Validate, Debug)]
     pub struct LoginUserPayload {
         #[validate(email)]
         pub email: String,
@@ -143,4 +143,21 @@ pub mod password {
         argon2.verify_password(input_password.as_bytes(), &parsed_hash)?;
         Ok(())
     }
+}
+
+pub mod mocks {
+    use super::*;
+
+    factori::factori!(User, {
+        default {
+            id = Uuid::new_v4(),
+            name = Some("John Doe".to_string()),
+            nickname = "johndoe".to_string(),
+            email = "johndoe@gmail.com".to_string(),
+            password = "password".to_string(),
+            bio = Some("I am a cool guy".to_string()),
+            creation_time = Utc::now(),
+            update_time = None,
+        }
+    });
 }

@@ -44,6 +44,7 @@ pub trait UserHandler {
 
 #[async_trait::async_trait]
 impl UserHandler for UserHandlerImpl {
+    #[tracing::instrument(skip(self))]
     async fn create_user(&self, new_user: NewUserPayload) -> Result<PublicUser, RepositoryError> {
         let user_with_nickname = self
             .user_repository
@@ -65,6 +66,7 @@ impl UserHandler for UserHandlerImpl {
         Ok(new_user)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn update_user_by_id(
         &self,
         id: Uuid,
@@ -84,6 +86,7 @@ impl UserHandler for UserHandlerImpl {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_user_by_nickname(
         &self,
         nickname: String,
@@ -95,6 +98,7 @@ impl UserHandler for UserHandlerImpl {
         Ok(user)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_user_by_id(&self, id: Uuid) -> Result<Option<PublicUser>, RepositoryError> {
         let user = self.user_repository.get_user_by_id(id).await?;
         if user.is_none() {
@@ -103,6 +107,7 @@ impl UserHandler for UserHandlerImpl {
         Ok(user)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn delete_user(&self, id: Uuid) -> Result<(), RepositoryError> {
         let user = self.user_repository.get_user_by_id(id).await?;
         if user.is_none() {
@@ -112,6 +117,7 @@ impl UserHandler for UserHandlerImpl {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_user_by_login(
         &self,
         login_payload: LoginUserPayload,
