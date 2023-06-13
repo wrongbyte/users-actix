@@ -50,7 +50,6 @@ async fn update_user_by_id(
     match req.headers().get("Authorization") {
         Some(auth_header) => {
             let uuid = get_id_auth_header(auth_header)?;
-            println!("uuid: {:?}", uuid);
             if uuid != id {
                 return Err(AppError::bad_request("Unauthorized".to_string()));
             }

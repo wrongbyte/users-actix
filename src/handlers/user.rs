@@ -139,3 +139,32 @@ impl UserHandler for UserHandlerImpl {
         Ok(user.id)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::domain::user::{mocks::*, MockUserRepository};
+
+    #[tokio::test]
+    async fn creates_user_correctly() {
+        let new_user_payload = factori::create!(NewUserPayload);
+        let user = factori::create!(PublicUser);
+
+        let mut repo = MockUserRepository::new();
+
+        repo.expect_get_user_by_nickname().returning(|_| Ok(None));
+
+        repo.expect_get_user_by_email().returning(|_| Ok(None));
+
+        repo.expect_create_user().return_once(|_| Ok(user));
+
+        let handler = UserHandlerImpl {
+            user_repository: Box::new(repo),
+        };
+
+        handler
+            .create_user(new_user_payload)
+            .await
+            .expect("Failed to create a new user");
+    }
+}

@@ -44,6 +44,7 @@ pub struct PublicUser {
     pub creation_time: DateTime<Utc>,
 }
 
+#[cfg_attr(test, mockall::automock)]
 #[async_trait::async_trait]
 pub trait UserRepository {
     async fn create_user(&self, user: NewUserPayload) -> Result<PublicUser, RepositoryError>;
@@ -158,6 +159,27 @@ pub mod mocks {
             bio = Some("I am a cool guy".to_string()),
             creation_time = Utc::now(),
             update_time = None,
+        }
+    });
+
+    factori::factori!(PublicUser, {
+        default {
+            id = Uuid::new_v4(),
+            name = Some("John Doe".to_string()),
+            nickname = "johndoe".to_string(),
+            email = "johndoe@gmail.com".to_string(),
+            bio = Some("I am a cool guy".to_string()),
+            creation_time = Utc::now(),
+        }
+    });
+
+    factori::factori!(NewUserPayload, {
+            default {
+                name = Some("John Doe".to_string()),
+                nickname = "johndoe".to_string(),
+                email = "johndoe@gmail.com".to_string(),
+                password = "password".to_string(),
+                bio = Some("I am a cool guy".to_string()),
         }
     });
 }
