@@ -167,4 +167,46 @@ mod test {
             .await
             .expect("Failed to create a new user");
     }
+    #[tokio::test]
+    async fn does_not_create_user_if_existing_nickname() {
+        let nickname = "nickname".to_string();
+        let new_user_payload = factori::create!(NewUserPayload, nickname: nickname.clone());
+        let user = factori::create!(PublicUser, nickname: nickname);
+
+        let mut repo = MockUserRepository::new();
+
+        repo.expect_get_user_by_nickname()
+            .return_once(|_| Ok(Some(user)));
+
+        repo.expect_get_user_by_email().return_once(|_| Ok(None));
+
+        let handler = UserHandlerImpl {
+            user_repository: Box::new(repo),
+        };
+
+        let result = handler.create_user(new_user_payload).await;
+
+        assert!(result.is_err());
+    }
+    #[tokio::test]
+    async fn does_not_create_user_if_existing_email() {
+        let email = "test_email@gmail.com".to_string();
+        let new_user_payload = factori::create!(NewUserPayload, email: email.clone());
+        let user = factori::create!(PublicUser, email: email);
+
+        let mut repo = MockUserRepository::new();
+
+        repo.expect_get_user_by_nickname().return_once(|_| Ok(None));
+
+        repo.expect_get_user_by_email()
+            .return_once(|_| Ok(Some(user)));
+
+        let handler = UserHandlerImpl {
+            user_repository: Box::new(repo),
+        };
+
+        let result = handler.create_user(new_user_payload).await;
+
+        assert!(result.is_err());
+    }
 }

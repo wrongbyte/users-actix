@@ -13,7 +13,7 @@ use crate::{
 
 use self::payload::{LoginUserPayload, NewUserPayload, UpdateUserPayload};
 
-#[derive(sqlx::FromRow, Serialize, Deserialize, Debug)]
+#[derive(sqlx::FromRow, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     pub id: Uuid,
@@ -30,7 +30,7 @@ pub struct User {
     pub update_time: Option<DateTime<Utc>>,
 }
 
-#[derive(sqlx::FromRow, Serialize, Deserialize, Debug)]
+#[derive(sqlx::FromRow, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct PublicUser {
     pub id: Uuid,
